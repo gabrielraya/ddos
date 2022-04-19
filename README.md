@@ -26,6 +26,12 @@ The goal of MC samplers is to sample from the typical set Here, we first
 
 
 
+## Tensorboard
+Under your tensorboard folder run the following to visualize the results
+
+```bash
+tensorboard --logdir=./
+```
 
 
 # Testing Libraries
