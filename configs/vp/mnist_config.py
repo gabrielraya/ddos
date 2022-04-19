@@ -48,7 +48,7 @@ def get_config():
     model.progressive_input = 'residual'
     model.progressive_combine = 'sum'
     model.attention_type = 'ddpm'
-    model.embedding_type = 'positional'
+    model.embedding_type = 'fourier'
     model.init_scale = 0.
     model.fourier_scale = 16
     model.conv_size = 3

@@ -25,7 +25,10 @@ def train(config, workdir):
 
     # Initialize model
     score_model = mutils.create_model(config)
-    # print(print(config.model.name))
+    print(score_model)
+    random_t = torch.rand(128)
+    print(random_t)
+    print(score_model(random_t))
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     # trainset = datasets.MNIST('mnist_train', train=True, download=True, transform=transform)
     # trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
