@@ -19,3 +19,5 @@ def get_optimizer(config, params):
     else:
         raise NotImplementedError(
             f'Optimizer {config.optim.optimizer} not supported yet!')
+
+    return optimizer
