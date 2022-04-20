@@ -3,6 +3,8 @@ import os
 import tensorflow as tf
 from absl import flags
 from torch.utils import tensorboard
+
+import losses
 from models import utils as mutils
 
 import torch
@@ -25,17 +27,21 @@ def train(config, workdir):
 
     # Initialize model
     score_model = mutils.create_model(config)
-    print(score_model)
-    random_t = torch.rand(128)
-    print(random_t)
-    print(score_model(random_t))
-    # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
-    # trainset = datasets.MNIST('mnist_train', train=True, download=True, transform=transform)
-    # trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
-    # model = torchvision.models.resnet50(False)
-    # # Have ResNet model take in grayscale rather than RGB
+    optimizer = losses.get_optimizer(config, score_model.parameters())
+
+
+    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+    trainset = datasets.MNIST('mnist_train', train=True, download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
+    model = torchvision.models.resnet50(False)
+    # Have ResNet model take in grayscale rather than RGB
     # model.conv1 = torch.nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-    # images, labels = next(iter(trainloader))
+    x, labels = next(iter(trainloader))
+    print("Image shape:", x.shape)
+    random_t = torch.rand(x.shape[0])
+    print("H1+t", score_model(x, random_t).shape)
+    # summary(score_model, (1,28,28), random_t)
+
     # grid = torchvision.utils.make_grid(images)
     # writer.add_image('images', grid, 0)
     # writer.add_graph(model, images)
@@ -47,7 +53,7 @@ def train(config, workdir):
     #     writer.add_scalar('Accuracy/test', np.random.random(), n_iter)
 
     writer.close()
-#%%
+ #%%
 
 
 
