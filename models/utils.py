@@ -29,7 +29,6 @@ def get_model(name):
     return _MODELS[name]
 
 
-
 def create_model(config):
     """
     Create the score model
@@ -39,6 +38,7 @@ def create_model(config):
     model_name = config.model.name
     score_model = get_model(model_name)(config)
     # score_model = get_model()
+    return score_model
 
 
 def get_model_fn(model, train=False):
