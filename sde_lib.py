@@ -65,34 +65,35 @@ class BASIC_SDE(SDE):
         self.N = N
         self.sigma = sigma
         self.device = device
-        @property
-        def T(self):
-            return 1
 
-        def sde(self, x, t):
-            """
-            The forward SDE dx = f(x,t)dt + g(t)dW
-            :param self:
-            :param x: x init
-            :param t:
-            :return:
-            """
-            drift = 0
-            diffusion = torch.tensor(self.sigma**t, device=self.device)
-            return drift, diffusion
+    @property
+    def T(self):
+        return 1
+
+    def sde(self, x, t):
+        """
+        The forward SDE dx = f(x,t)dt + g(t)dW
+        :param self:
+        :param x: x init
+        :param t:
+        :return:
+        """
+        drift = 0
+        diffusion = torch.tensor(self.sigma**t, device=self.device)
+        return drift, diffusion
 
 
-        def marginal_pro(self, x, t):
-            """
-            The marginal probability at x(t=T)
-            Compute the mean and standard deviation of $p_{0t}(x(t) | x(0))$.
-            :param self:
-            :param x:
-            :param t:
-            :return:
-            """
-            t = torch.tensor(t, device=self.device)
-            std = torch.sqrt((self.sigma**(2 * t) - 1.) / (2. * np.log(self.sigma)))
-            mean = 0
+    def marginal_pro(self, x, t):
+        """
+        The marginal probability at x(t=T)
+        Compute the mean and standard deviation of $p_{0t}(x(t) | x(0))$.
+        :param self:
+        :param x:
+        :param t:
+        :return:
+        """
+        t = t.clone().to(self.device)
+        std = torch.sqrt((self.sigma**(2 * t) - 1.) / (2. * np.log(self.sigma)))
+        mean = 0
 
-            return mean, std
+        return mean, std
