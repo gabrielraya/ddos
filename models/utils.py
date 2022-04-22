@@ -8,7 +8,6 @@ def register_model(cls=None, *, name=None):
     """A decorator for registering model classes."""
 
     def _register(cls):
-        print(name)
         if name is None:
             local_name = cls.__name__
         else:
@@ -25,18 +24,17 @@ def register_model(cls=None, *, name=None):
 
 
 def get_model(name):
-    print(_MODELS)
     return _MODELS[name]
 
 
-def create_model(config):
+def create_model(config, sde):
     """
     Create the score model
     :param config: ymal file
     :return:
     """
     model_name = config.model.name
-    score_model = get_model(model_name)(config)
+    score_model = get_model(model_name)(config, sde)
     # score_model = get_model()
     return score_model
 
