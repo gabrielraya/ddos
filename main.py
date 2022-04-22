@@ -26,19 +26,19 @@ def main(argv):
 
     if FLAGS.mode == "train":
         # Create the working directory
-        tf.io.gfile.makedirs(FLAGS.workdir)
-        print("File created at :", FLAGS.workdir)
-        # Set logger so that it outputs to both console and file
-        # Make logging work for both disk and Google Cloud storage
-        gfile_stream = open(os.path.join(FLAGS.workdir, 'stdout.txt'), 'w')
-        handler = logging.StreamHandler(gfile_stream)
-        formatter = logging.Formatter('%(levelname)s - %(filename)s - %(asctime)s - %(message)s')
-        handler.setFormatter(formatter)
-        logger = logging.getLogger()
-        logger.addHandler(handler)
-        logger.setLevel('INFO')
+        # tf.io.gfile.makedirs(FLAGS.workdir)
+        # print("File created at :", FLAGS.workdir)
+        # # Set logger so that it outputs to both console and file
+        # # Make logging work for both disk and Google Cloud storage
+        # gfile_stream = open(os.path.join(FLAGS.workdir, 'stdout.txt'), 'w')
+        # handler = logging.StreamHandler(gfile_stream)
+        # formatter = logging.Formatter('%(levelname)s - %(filename)s - %(asctime)s - %(message)s')
+        # handler.setFormatter(formatter)
+        # logger = logging.getLogger()
+        # logger.addHandler(handler)
+        # logger.setLevel('INFO')
         # Run the training pipeline
-        print("\tTraining model")
+        print("Training model")
         # run training passing configuration file parameters and working directory
         run_lib.train(FLAGS.config, FLAGS.workdir)
 
