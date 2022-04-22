@@ -40,6 +40,9 @@ def train(config, workdir):
 
     # Initialize model
     score_model = mutils.create_model(config, sde)
+    score_model = torch.nn.DataParallel(score_model)
+    score_model = score_model.to(config.device)
+
     optimizer = losses.get_optimizer(config, score_model.parameters())
     state = dict(optimizer=optimizer, model=score_model, step=0)
 
@@ -76,9 +79,9 @@ def train(config, workdir):
         # Print the averaged training loss so far.
         logging.info("epoch: %d, training_loss: %.5e" % (epoch, loss.item()))
         writer.add_scalar("training_loss", loss, epoch)
-        # tqdm_epoch.set_description('Average Loss: {:5f}'.format(loss.item()))
-        # print('Loss\t', loss.item())
-
+        tqdm_epoch.set_description('Average Loss: {:5f}'.format(loss.item()))
+        # Update the checkpoint after each epoch of training.
+        torch.save(score_model.state_dict(), workdir+'/ckpt.pth')
 
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     # trainset = datasets.MNIST('mnist_train', train=True, download=True, transform=transform)
