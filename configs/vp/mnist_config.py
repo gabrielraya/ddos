@@ -13,7 +13,7 @@ def get_config():
 
     # training
     training = config.training
-    training.sde = "vpsde"
+    training.sde = "basic_sde"
     training.continuous = True
     training.reduce_mean = True
 
