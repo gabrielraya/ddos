@@ -26,6 +26,8 @@ def get_config():
     # data
     data = config.data
     data.centered = True
+    data.use_reduced_data = False
+    data.sample_size = 0.1          # Training in a smaller subset
 
     # model
     model = config.model
