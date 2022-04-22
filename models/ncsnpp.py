@@ -37,13 +37,13 @@ class Dense(nn.Module):
 class NCSNpp(nn.Module):
     """NCSN++ model"""
 
-    def __init__(self, config):
+    def __init__(self, config, sde):
         super().__init__()
         self.config = config
         self.act = act = get_act(config)
         self.nf = nf = config.model.nf
         self.embedding_type = embedding_type = config.model.embedding_type.lower()
-
+        self.sde = sde
         # Gaussian random feature embedding layer for time
         self.embed = nn.Sequential(layerspp.GaussianFourierProjection(embedding_size=nf, scale=config.model.fourier_scale),
                                     nn.Linear(nf, nf))
@@ -85,7 +85,7 @@ class NCSNpp(nn.Module):
 
         # Encoding path
         h1 = self.conv1(x) #(28-3)/1 + 1 = 26
-        print("h1", h1.shape)
+        # print("h1", h1.shape)
         ## Incorporate information from t
         h1+= self.dense1(embed)
         ## Group normalization
@@ -126,5 +126,6 @@ class NCSNpp(nn.Module):
         h = self.tconv1(torch.cat([h, h1], dim=1))
 
         # Normalize output
-        # h = h / self.marginal_prob_std(t)[:, None, None, None]
+        _, marginal_prob_std = self.sde.marginal_pro(x, t)
+        h = h / marginal_prob_std[:, None, None, None]
         return h
