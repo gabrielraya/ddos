@@ -48,13 +48,13 @@ def get_sde_loss_fn(sde, train=True, reduce_mean=True, likelihood_weighting=True
     :param train: `True`for training loss and `False`for evaluation loss
     :param reduce_mean: if `True`, average the loss across data dimensions.
                         Otherwise sum the loss across data dimensions.
-    :param continuous: `True` indicates that the model is defined to take continuous time steps.
-                        Otherwise it requires ad-hoc interpolation to take continuous time steps.
     :param likelihood_weighting: if `True`, weight the mixture of score matching losses according
                         to https://arxiv.org/abs/2101.09258;  otherwise use the weighting recommended in our paper.
     :param eps: A `float` number. The smallest time step to sample from.
     :return: A loss function.
     """
+
+    reduce_op = torch.mean if reduce_mean else lambda *args, **kwargs: 0.5 * torch.sum(*args, **kwargs)
 
     def loss_fn(model, x, eps=1e-5):
         """
@@ -76,8 +76,18 @@ def get_sde_loss_fn(sde, train=True, reduce_mean=True, likelihood_weighting=True
 
         score = model(perturbed_x, random_t)
 
-        # weighted loss function
-        loss = torch.mean(torch.sum((score * std[:, None, None, None] + z)**2, dim=(1,2,3)))
+        if not likelihood_weighting:
+            # basically applies this
+            # loss = torch.mean(torch.sum((score * std[:, None, None, None] + z)**2, dim=(1,2,3)))
+            losses = (score * std[:, None, None, None] + z)**2
+            losses = reduce_op(losses.reshape(losses.shape[0], -1), dim=-1)
+        else:
+            g2 = sde.sde(torch.zeros_like(x), random_t)[1] ** 2
+            losses = torch.square(score + z / std[:, None, None, None])
+            losses = reduce_op(losses.reshape(losses.shape[0], -1), dim=-1) * g2
+
+        loss = torch.mean(losses)
+
         return loss
 
     return loss_fn

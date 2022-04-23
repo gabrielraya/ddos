@@ -70,18 +70,25 @@ def train(config, workdir):
     continuous = config.training.continuous
     reduce_mean = config.training.reduce_mean
     likelihood_weighting = config.training.likelihood_weighting
-    # train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimize_fn,
-    #                                    reduce_mean=reduce_mean, continuous=continuous,
-    #                                    likelihood_weighting=likelihood_weighting)
+    train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimize_fn,
+                                       reduce_mean=reduce_mean,
+                                       likelihood_weighting=likelihood_weighting)
+
+    # Building sampling functions
+    # if config.training.snapshot_sampling:
+    #     sampling_shape = (config.training.batch_size, config.data.num_channels,
+    #                       config.data.image_size, config.data.image_size)
+    #     sampling_fn = sampling.get_sampling_fn(config, sde, sampling_shape, inverse_scaler, sampling_eps)
+
+
     data_loader = DataLoader(train_ds, batch_size=config.training.batch_size, shuffle=True, num_workers=4)
     tqdm_epoch = tqdm.trange(config.training.n_iter)
 
     loss_fn = losses.get_sde_loss_fn(sde)
 
-    print("\nStart training of score model\n")
-
     # In case there are multiple hosts (e.g., TPU pods), only log to host 0
     logging.info("Starting training loop at step %d." % (initial_step,))
+    print("\nStarting training loop at step %d.\n" % (initial_step,))
 
     for epoch in tqdm_epoch: #num_train_steps+1):
         avg_loss = 0.
