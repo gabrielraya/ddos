@@ -79,7 +79,7 @@ class BASIC_SDE(SDE):
         :return:
         """
         drift = 0
-        diffusion = torch.tensor(self.sigma**t, device=self.device)
+        diffusion = (self.sigma**t).clone().detach().to(self.device)
         return drift, diffusion
 
     def marginal_pro(self, x, t):
