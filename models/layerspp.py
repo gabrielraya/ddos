@@ -44,5 +44,5 @@ class GaussianFourierProjection(nn.Module):
         :return: a basic input mapping f(v) = [sin2piv, cos2piv,]^T
         """
         v = t[:, None] * self.W[None, :]
-        x_proj =  2 * np.pi * v
-        return torch.cat([torch.sin(x_proj), torch.cos(x_proj)], dim=-1)
+        t_proj =  2 * np.pi * v
+        return torch.cat([torch.sin(t_proj), torch.cos(t_proj)], dim=-1)
