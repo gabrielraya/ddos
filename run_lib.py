@@ -51,7 +51,7 @@ def train(config, workdir):
 
     # Optimizer
     optimizer = losses.get_optimizer(config, score_model.parameters())
-    state = dict(optimizer=optimizer, model=score_model, step=0)
+    state = dict(optimizer=optimizer, model=score_model, ema=ema, step=0)
 
     # Create checkpoints directory
     checkpoint_dir = os.path.join(workdir, "checkpoints")
@@ -60,16 +60,20 @@ def train(config, workdir):
     # Build data iterators
     train_ds, eval_ds = datasets.get_dataset(config)
 
-    # Create data normalizer and its inverse
+    # Create data normalizer and its inverse if needed
     scaler = datasets.get_data_scaler(config)
     inverse_scaler = datasets.get_data_inverse_scaler(config)
 
     # Build one-step training and evaluation functions
+    optimize_fn = losses.optimization_manager(config)
     train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimizer)
-
-
+    continuous = config.training.continuous
+    reduce_mean = config.training.reduce_mean
+    likelihood_weighting = config.training.likelihood_weighting
+    # train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimize_fn,
+    #                                    reduce_mean=reduce_mean, continuous=continuous,
+    #                                    likelihood_weighting=likelihood_weighting)
     data_loader = DataLoader(train_ds, batch_size=config.training.batch_size, shuffle=True, num_workers=4)
-
     tqdm_epoch = tqdm.trange(config.training.n_iter)
 
     loss_fn = losses.get_sde_loss_fn(sde)
