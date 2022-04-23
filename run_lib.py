@@ -7,6 +7,7 @@ from torch.utils import tensorboard
 import losses
 import sde_lib
 from models import utils as mutils
+from models.ema import ExponentialMovingAverage
 import datasets
 
 import torch
@@ -20,6 +21,12 @@ from models import ncsnpp
 FLAGS = flags.FLAGS
 
 def train(config, workdir):
+    """
+    Runs the training pipeline
+    :param config: Configuration to use as ml_collections
+    :param workdir: Working directory for checkpoints and TF summaries
+    :return:
+    """
     # Create directories for experimental logs
     sample_dir = os.path.join(workdir, "samples")
     tf.io.gfile.makedirs(sample_dir)
@@ -31,7 +38,7 @@ def train(config, workdir):
     # Build data iterators
     train_ds, eval_ds = datasets.get_dataset(config)
 
-    # Setup SDEs
+    # Setup Forward SDE
     if config.training.sde.lower() == "basic_sde":
         sde = sde_lib.BASIC_SDE(sigma=config.model.sigma_max, N=config.model.num_scales)
         sampling_eps = 1e-3
@@ -40,6 +47,8 @@ def train(config, workdir):
 
     # Initialize model
     score_model = mutils.create_model(config, sde)
+    # EMA https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage?version=stable
+    ema = ExponentialMovingAverage(score_model.parameters(), decay=config.model.ema_rate)
     score_model = torch.nn.DataParallel(score_model)
     score_model = score_model.to(config.device)
 
