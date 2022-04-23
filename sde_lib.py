@@ -93,7 +93,7 @@ class BASIC_SDE(SDE):
         """
         t = t.clone().to(self.device)
         std = torch.sqrt((self.sigma**(2 * t) - 1.) / (2. * np.log(self.sigma)))
-        mean = 0
+        mean = x
 
         return mean, std
 
