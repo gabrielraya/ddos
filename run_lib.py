@@ -35,9 +35,6 @@ def train(config, workdir):
     tf.io.gfile.makedirs(tb_dir)
     writer = tensorboard.SummaryWriter(tb_dir)
 
-    # Build data iterators
-    train_ds, eval_ds = datasets.get_dataset(config)
-
     # Setup Forward SDE
     if config.training.sde.lower() == "basic_sde":
         sde = sde_lib.BASIC_SDE(sigma=config.model.sigma_max, N=config.model.num_scales)
@@ -52,12 +49,20 @@ def train(config, workdir):
     score_model = torch.nn.DataParallel(score_model)
     score_model = score_model.to(config.device)
 
+    # Optimizer
     optimizer = losses.get_optimizer(config, score_model.parameters())
     state = dict(optimizer=optimizer, model=score_model, step=0)
 
     # Create checkpoints directory
     checkpoint_dir = os.path.join(workdir, "checkpoints")
     initial_step = int(state['step'])
+
+    # Build data iterators
+    train_ds, eval_ds = datasets.get_dataset(config)
+
+    # Create data normalizer and its inverse
+    scaler = datasets.get_data_scaler(config)
+    inverse_scaler = datasets.get_data_inverse_scaler(config)
 
     # Build one-step training and evaluation functions
     train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimizer)
@@ -79,6 +84,7 @@ def train(config, workdir):
         num_items = 0
         for x, y in data_loader:
             x = x.to(config.device)
+            x = scaler(x)
             # Execute one training step
             # loss = train_step_fn(state, x)
             loss = loss_fn(score_model, x)
