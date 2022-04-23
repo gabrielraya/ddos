@@ -66,7 +66,8 @@ def train(config, workdir):
     logging.info("Starting training loop at step %d." % (initial_step,))
 
     for epoch in tqdm_epoch: #num_train_steps+1):
-
+        avg_loss = 0.
+        num_items = 0
         for x, y in data_loader:
             x = x.to(config.device)
             # Execute one training step
@@ -75,11 +76,12 @@ def train(config, workdir):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
+            avg_loss += loss.item() * x.shape[0]
+            num_items += x.shape[0]
         # Print the averaged training loss so far.
         logging.info("epoch: %d, training_loss: %.5e" % (epoch, loss.item()))
         writer.add_scalar("training_loss", loss, epoch)
-        tqdm_epoch.set_description('Average Loss: {:5f}'.format(loss.item()))
+        tqdm_epoch.set_description('Average Loss: {:5f}'.format(avg_loss/num_items))
         # Update the checkpoint after each epoch of training.
         torch.save(score_model.state_dict(), workdir+'/ckpt.pth')
 
