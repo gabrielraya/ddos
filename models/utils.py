@@ -35,7 +35,6 @@ def create_model(config, sde):
     """
     model_name = config.model.name
     score_model = get_model(model_name)(config, sde)
-    # score_model = get_model()
     return score_model
 
 
