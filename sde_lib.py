@@ -72,7 +72,7 @@ class BASIC_SDE(SDE):
 
     def sde(self, x, t):
         """
-        The forward SDE dx = f(x,t)dt + g(t)dW
+        The forward SDE $dx = \sigma^t dW$
         :param self:
         :param x: x init
         :param t:
@@ -81,7 +81,6 @@ class BASIC_SDE(SDE):
         drift = 0
         diffusion = torch.tensor(self.sigma**t, device=self.device)
         return drift, diffusion
-
 
     def marginal_pro(self, x, t):
         """
@@ -97,3 +96,6 @@ class BASIC_SDE(SDE):
         mean = 0
 
         return mean, std
+
+    def prior_sampling(self, shape):
+        return torch.randn(*shape)
