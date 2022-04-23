@@ -84,7 +84,8 @@ def train(config, workdir):
     data_loader = DataLoader(train_ds, batch_size=config.training.batch_size, shuffle=True, num_workers=4)
     tqdm_epoch = tqdm.trange(config.training.n_iter)
 
-    loss_fn = losses.get_sde_loss_fn(sde)
+    loss_fn = losses.get_sde_loss_fn(sde, train=True, reduce_mean=reduce_mean,
+                                     likelihood_weighting=likelihood_weighting)
 
     # In case there are multiple hosts (e.g., TPU pods), only log to host 0
     logging.info("Starting training loop at step %d." % (initial_step,))
