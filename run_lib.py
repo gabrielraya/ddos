@@ -44,10 +44,11 @@ def train(config, workdir):
 
     # Initialize model
     score_model = mutils.create_model(config, sde)
-    # EMA https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage?version=stable
-    ema = ExponentialMovingAverage(score_model.parameters(), decay=config.model.ema_rate)
     score_model = torch.nn.DataParallel(score_model)
     score_model = score_model.to(config.device)
+
+    # EMA https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage?version=stable
+    ema = ExponentialMovingAverage(score_model.parameters(), decay=config.model.ema_rate)
 
     # Optimizer
     optimizer = losses.get_optimizer(config, score_model.parameters())
