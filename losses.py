@@ -72,20 +72,22 @@ def get_sde_loss_fn(sde, train=True, reduce_mean=True, likelihood_weighting=True
         # compute expected and variance of x(t) using the variation of constants solution.
         mean, std = sde.marginal_pro(x, random_t)
         # sample x(t) ~ x_0 + std * z ; z ~ N(0,1)
-        perturbed_x = x + std[:, None, None, None] * z
+        perturbed_x = mean + std[:, None, None, None] * z
 
         score = model(perturbed_x, random_t)
 
         if not likelihood_weighting:
             # basically applies this
             # loss = torch.mean(torch.sum((score * std[:, None, None, None] + z)**2, dim=(1,2,3)))
-            losses = (score * std[:, None, None, None] + z)**2
+            # if reduce_op=sum but halved
+            losses = torch.square(score * std[:, None, None, None] + z)  # results after mutiplying by \lambda
             losses = reduce_op(losses.reshape(losses.shape[0], -1), dim=-1)
         else:
             g2 = sde.sde(torch.zeros_like(x), random_t)[1] ** 2
             losses = torch.square(score + z / std[:, None, None, None])
             losses = reduce_op(losses.reshape(losses.shape[0], -1), dim=-1) * g2
 
+        # average over batch = $E_{x(0)}[]$
         loss = torch.mean(losses)
 
         return loss
