@@ -73,7 +73,9 @@ def train(config, workdir):
     train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimize_fn,
                                        reduce_mean=reduce_mean,
                                        likelihood_weighting=likelihood_weighting)
-
+    eval_step_fn = losses.get_step_fn(sde, train=False, optimize_fn=optimize_fn,
+                                       reduce_mean=reduce_mean,
+                                       likelihood_weighting=likelihood_weighting)
     # Building sampling functions
     # if config.training.snapshot_sampling:
     #     sampling_shape = (config.training.batch_size, config.data.num_channels,
@@ -99,15 +101,19 @@ def train(config, workdir):
             x = scaler(x)
             # Execute one training step
             loss = train_step_fn(state, x)
-            # loss = loss_fn(score_model, x)
-            # optimizer.zero_grad()
-            # loss.backward()
-            # optimizer.step()
-        # Print the averaged training loss so far.
         logging.info("epoch: %d, training_loss: %.5e" % (epoch, loss.item()))
         writer.add_scalar("training_loss", loss, epoch)
         tqdm_epoch.set_description('Average Loss: {:5f}'.format(loss.item()))
-        # Update the checkpoint after each epoch of training.
+
+        # Report the loss on an evaluation dataset periodically
+        eval_batch, _ = next(iter(eval_loader))
+        eval_batch = eval_batch.to(config.device)
+        eval_batch = scaler(eval_batch)
+        eval_loss = eval_step_fn(state, eval_batch)
+        logging.info("step: %d, eval_loss: %.5e" % (epoch, eval_loss.item()))
+        writer.add_scalar("eval_loss", eval_loss.item(), epoch)
+
+    # Update the checkpoint after each epoch of training.
         torch.save(score_model.state_dict(), workdir+'/ckpt.pth')
 
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
