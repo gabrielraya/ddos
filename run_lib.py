@@ -66,7 +66,6 @@ def train(config, workdir):
 
     # Build one-step training and evaluation functions
     optimize_fn = losses.optimization_manager(config)
-    train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimizer)
     continuous = config.training.continuous
     reduce_mean = config.training.reduce_mean
     likelihood_weighting = config.training.likelihood_weighting
@@ -82,33 +81,31 @@ def train(config, workdir):
 
 
     data_loader = DataLoader(train_ds, batch_size=config.training.batch_size, shuffle=True, num_workers=4)
+    eval_loader = DataLoader(eval_ds, batch_size=config.training.batch_size, shuffle=True, num_workers=4)
+
     tqdm_epoch = tqdm.trange(config.training.n_iter)
 
-    loss_fn = losses.get_sde_loss_fn(sde, train=True, reduce_mean=reduce_mean,
-                                     likelihood_weighting=likelihood_weighting)
+    # loss_fn = losses.get_sde_loss_fn(sde, train=True, reduce_mean=reduce_mean,
+    #                                  likelihood_weighting=likelihood_weighting)
 
     # In case there are multiple hosts (e.g., TPU pods), only log to host 0
     logging.info("Starting training loop at step %d." % (initial_step,))
     print("\nStarting training loop at step %d.\n" % (initial_step,))
 
     for epoch in tqdm_epoch: #num_train_steps+1):
-        avg_loss = 0.
-        num_items = 0
         for x, y in data_loader:
             x = x.to(config.device)
             x = scaler(x)
             # Execute one training step
-            # loss = train_step_fn(state, x)
-            loss = loss_fn(score_model, x)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            avg_loss += loss.item() * x.shape[0]
-            num_items += x.shape[0]
+            loss = train_step_fn(state, x)
+            # loss = loss_fn(score_model, x)
+            # optimizer.zero_grad()
+            # loss.backward()
+            # optimizer.step()
         # Print the averaged training loss so far.
         logging.info("epoch: %d, training_loss: %.5e" % (epoch, loss.item()))
         writer.add_scalar("training_loss", loss, epoch)
-        tqdm_epoch.set_description('Average Loss: {:5f}'.format(avg_loss/num_items))
+        tqdm_epoch.set_description('Average Loss: {:5f}'.format(loss.item()))
         # Update the checkpoint after each epoch of training.
         torch.save(score_model.state_dict(), workdir+'/ckpt.pth')
 

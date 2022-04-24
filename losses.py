@@ -107,7 +107,8 @@ def get_step_fn(sde, train, optimize_fn=None, reduce_mean=False, likelihood_weig
     :return: A one-step function for training or evaluation
     """
 
-    loss_fn = get_sde_loss_fn(sde)
+    loss_fn = get_sde_loss_fn(sde, train, reduce_mean=reduce_mean,
+                              likelihood_weighting=likelihood_weighting)
 
     def step_fn(state, batch):
         """
