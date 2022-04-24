@@ -15,7 +15,7 @@ def get_config():
     training = config.training
     training.sde = "basic_sde"
     training.continuous = True
-    training.reduce_mean = True
+    training.reduce_mean = False
 
     # sampling
     sampling = config.sampling
