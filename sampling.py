@@ -71,7 +71,7 @@ def get_sampling_fn(config, sde, shape, inverse_scaler, eps):
     sampler_name = config.sampling.method
 
     # Predictor-Corrector sampling. Predictor-only and Corrector-only samplers are special cases.
-    if sampler_name.lower == 'pc':
+    if sampler_name.lower() == 'pc':
         predictor = get_predictor(config.sampling.predictor.lower())
         corrector = get_corrector(config.sampling.corrector.lower())
         sampling_fn = get_pc_sampler(sde=sde,
@@ -182,7 +182,7 @@ class NoneCorrector(Corrector):
     def update_fn(self, x, t):
         return x, x
 
-    
+
 def shared_predictor_update_fn(x, t, sde, model, predictor, probability_flow, continuous):
     """A wrapper that configures and returns the update function of predictors."""
     score_fn = mutils.get_score_fn(sde, model, train=False, continuous=continuous)
