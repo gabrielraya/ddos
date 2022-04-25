@@ -70,7 +70,7 @@ def get_sde_loss_fn(sde, train=True, reduce_mean=True, likelihood_weighting=True
 
         # sample x(t) ~p_0t(x(t)|x(0)) for a random t
         # compute expected and variance of x(t) using the variation of constants solution.
-        mean, std = sde.marginal_pro(x, random_t)
+        mean, std = sde.marginal_prob(x, random_t)
         # sample x(t) ~ x_0 + std * z ; z ~ N(0,1)
         perturbed_x = mean + std[:, None, None, None] * z
 

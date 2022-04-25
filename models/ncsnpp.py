@@ -126,6 +126,6 @@ class NCSNpp(nn.Module):
         h = self.tconv1(torch.cat([h, h1], dim=1))
 
         # Normalize output
-        _, marginal_prob_std = self.sde.marginal_pro(x, t)
+        _, marginal_prob_std = self.sde.marginal_prob(x, t)
         h = h / marginal_prob_std[:, None, None, None]
         return h

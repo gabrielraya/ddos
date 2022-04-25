@@ -70,7 +70,7 @@ def get_model_fn(model, train=False):
     return model_fn
 
 
-def get_score_fn(sde, model, train=False):
+def get_score_fn(sde, model, train=False,continuous=True):
     """
     Wraps `score_fn` so that the model output corresponds to a real time-dependent score function.
     :param sde: An `sde_lib.SDE` object that represents the forward SDE.
