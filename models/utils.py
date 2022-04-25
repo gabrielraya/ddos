@@ -1,4 +1,4 @@
-
+import torch
 
 
 _MODELS = {}
@@ -68,3 +68,21 @@ def get_model_fn(model, train=False):
             return model(x, labels)
 
     return model_fn
+
+
+def get_score_fn(sde, model, train=False):
+    """
+    Wraps `score_fn` so that the model output corresponds to a real time-dependent score function.
+    :param sde: An `sde_lib.SDE` object that represents the forward SDE.
+    :param model: A score model.
+    :param train:  `True` for training and `False` for evaluation.
+    :return: A score function
+    """
+    model_fn = get_model_fn(model, train=train)
+
+    def score_fn(x, t):
+        t = t.clon().to(x.device).reshape((x.shape[0], ))
+        score = model_fn(x, t)
+        return score
+
+    return score_fn
