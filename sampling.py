@@ -169,7 +169,20 @@ class NonePredictor(Predictor):
 @register_corrector(name='langevin')
 class LangevinCorrector(Corrector):
     def __init__(self, sde, score_fn, snr, n_steps):
+        pass
 
+
+@register_corrector(name='none')
+class NoneCorrector(Corrector):
+    """An empty corrector that does nothing."""
+
+    def __init__(self, sde, score_fn, snr, n_steps):
+        pass
+
+    def update_fn(self, x, t):
+        return x, x
+
+    
 def shared_predictor_update_fn(x, t, sde, model, predictor, probability_flow, continuous):
     """A wrapper that configures and returns the update function of predictors."""
     score_fn = mutils.get_score_fn(sde, model, train=False, continuous=continuous)
