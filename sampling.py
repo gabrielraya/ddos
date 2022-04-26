@@ -174,7 +174,6 @@ class LangevinCorrector(Corrector):
         super().__init__(sde, score_fn, snr, n_steps)
 
     def update_fn(self, x, t):
-        sde = self.sde
         score_fn = self.score_fn
         n_steps = self.snr
         target_snr = self.snr
@@ -184,8 +183,8 @@ class LangevinCorrector(Corrector):
         grad_norm = torch.norm(grad.reshape(grad.shape[0], -1), dim=-1).mean()
         noise_norm = torch.norm(noise.reshape(noise.shape[0], -1), dim=-1).mean()
         step_size = 2 * (target_snr * noise_norm / grad_norm) ** 2
-        x_mean = x + step_size[:, None, None, None] * grad
-        x = x_mean + torch.sqrt(step_size * 2)[:, None, None, None] * noise
+        x_mean = x + step_size * grad
+        x = x_mean + torch.sqrt(2 * step_size) * noise
 
         return x, x_mean
 
