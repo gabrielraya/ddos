@@ -125,7 +125,7 @@ class BASIC_SDE(SDE):
         self.sigma = sigma
         self.device = device
 
-    # @property
+    @property
     def T(self):
         return 1
 
