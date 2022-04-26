@@ -248,7 +248,7 @@ def get_pc_sampler(sde, shape, predictor, corrector, inverse_scaler, snr,
                                             continuous=continuous)
 
     #TODO check how to wrapped this function in the pc_sampler
-    def pc_sampler(model, x_init, t):
+    def pc_sampler(model, x_init, t, n_steps=sde.T):
         """
         The PC sampler function
 
@@ -264,9 +264,9 @@ def get_pc_sampler(sde, shape, predictor, corrector, inverse_scaler, snr,
             xs.append(x)
             # x = sde.prior_sampling(shape).to(device)
             # define the reverse time partition from [T,0)
-            timesteps = torch.linspace(t, eps, sde.N, device=device)
+            timesteps = torch.linspace(t, eps, n_steps, device=device)
 
-            for i in range(sde.N):
+            for i in range(n_steps):
                 t = timesteps[i]
                 vec_t = torch.ones(shape[0], device=t.device) * t
                 # x, x_mean = corrector_update_fn(x, vec_t, model=model)
