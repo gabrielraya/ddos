@@ -247,12 +247,6 @@ def get_pc_sampler(sde, shape, predictor, corrector, inverse_scaler, snr,
                                             probability_flow=probability_flow,
                                             continuous=continuous)
 
-    corrector_update_fn = functools.partial(shared_corrector_update_fn,
-                                            sde=sde,
-                                            corrector=corrector,
-                                            continuous=continuous,
-                                            snr=snr,
-                                            n_steps=n_steps)
     #TODO check how to wrapped this function in the pc_sampler
     def pc_sampler(model, x_init, t):
         """
@@ -261,9 +255,13 @@ def get_pc_sampler(sde, shape, predictor, corrector, inverse_scaler, snr,
         :param model: a score model
         :return: samples, number of function evaluations
         """
+        grad_norms = []
+        xs = []
+
         with torch.no_grad():
             # Initial sample
             x = x_init
+            xs.append(x)
             # x = sde.prior_sampling(shape).to(device)
             # define the reverse time partition from [T,0)
             timesteps = torch.linspace(t, eps, sde.N, device=device)
@@ -271,9 +269,11 @@ def get_pc_sampler(sde, shape, predictor, corrector, inverse_scaler, snr,
             for i in range(sde.N):
                 t = timesteps[i]
                 vec_t = torch.ones(shape[0], device=t.device) * t
-                x, x_mean = corrector_update_fn(x, vec_t, model=model)
+                # x, x_mean = corrector_update_fn(x, vec_t, model=model)
                 x, x_mean = predictor_update_fn(x, vec_t, model=model)
+                xs.append(x)
 
-            return inverse_scaler(x_mean if denoise else x), sde.N * (n_steps +1)
+            xs = torch.stack(xs, dim=1)
+            return inverse_scaler(x_mean if denoise else x), xs
 
     return pc_sampler
