@@ -21,7 +21,7 @@ def get_config():
     sampling = config.sampling
     sampling.method = 'pc'
     sampling.predictor = 'euler_maruyama'
-    sampling.corrector = 'none'
+    sampling.corrector = 'langevin'
 
     # data
     data = config.data
