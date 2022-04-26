@@ -23,6 +23,11 @@ def get_dataset(config, evaluation=False):
         train_ds = tds.MNIST('data/', train=True, transform=transforms.ToTensor(), download=True)
         eval_ds = tds.MNIST('data/', train=False, transform=transforms.ToTensor(), download=True)
 
+    elif config.data.dataset == 'FashionMNIST':
+        train_ds = tds.FashionMNIST('data/', train=True, transform=transforms.ToTensor(), download=True)
+        eval_ds = tds.FashionMNIST('data/', train=False, transform=transforms.ToTensor(), download=True)
+
+
         if config.data.use_reduced_data:
             print('Original dataset size: ', len(train_ds))
             indices = list(range(0, 2 * int(len(train_ds) * config.data.sample_size), 2))
