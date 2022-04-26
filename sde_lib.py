@@ -158,7 +158,15 @@ class BASIC_SDE(SDE):
 
     # REVIEW it should be multiply by the stationary std
     def prior_sampling(self, shape):
-        return torch.randn(*shape)
+        """
+        Sampling from the prior distribution
+        :param shape: image shape
+        :return: A PyTorch tensor 
+        """
+        t = torch.ones(shape[0], device=self.device) * self.T
+        init_x = torch.randn(*shape)
+        _, marginal_prob_std = self.marginal_prob(init_x, t)
+        return init_x * marginal_prob_std[:, None, None, None]
 
     def prior_logp(self, z):
         shape = z.shape
