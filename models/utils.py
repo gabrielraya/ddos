@@ -81,7 +81,7 @@ def get_score_fn(sde, model, train=False,continuous=True):
     model_fn = get_model_fn(model, train=train)
 
     def score_fn(x, t):
-        t = t.clon().to(x.device).reshape((x.shape[0], ))
+        t = t.clone().to(x.device).reshape((x.shape[0], ))
         score = model_fn(x, t)
         return score
 

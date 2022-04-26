@@ -84,8 +84,8 @@ class SDE(abc.ABC):
         # Build the class for reverse-time SDE
         class RSDE(self.__class__):
             def __init__(self):
-                self.N
-                self.probabilty_flow = probability_flow
+                self.N = N
+                self.probability_flow = probability_flow
 
             @property
             def T(self):
@@ -97,7 +97,7 @@ class SDE(abc.ABC):
                 score = score_fn(x,t)
                 drift = drift - diffusion[:, None, None, None]**2*score * (0.5 if self.probability_flow else 1.)
                 # Set the diffusion function to zero for ODES.
-                diffusion = 0. if self.probabilty_flow else diffusion
+                diffusion = 0. if self.probability_flow else diffusion
                 return drift, diffusion
 
             def discretize(self, x, t):
